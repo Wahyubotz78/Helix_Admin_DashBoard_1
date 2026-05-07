@@ -168,28 +168,28 @@ const ViewModal = ({ item, type, onClose }) => {
 
   const fields = isContact
     ? [
-        { icon: <User size={16} />, label: "First Name", value: item.firstName },
-        { icon: <User size={16} />, label: "Last Name", value: item.lastName },
-        { icon: <Mail size={16} />, label: "Email", value: item.email },
-        { icon: <Phone size={16} />, label: "Phone", value: item.phone || "—" },
-        { icon: <Building2 size={16} />, label: "Company", value: item.company || "—" },
-        { icon: <MessageSquare size={16} />, label: "Message", value: item.message },
-      ]
+      { icon: <User size={16} />, label: "First Name", value: item.firstName },
+      { icon: <User size={16} />, label: "Last Name", value: item.lastName },
+      { icon: <Mail size={16} />, label: "Email", value: item.email },
+      { icon: <Phone size={16} />, label: "Phone", value: item.phone || "—" },
+      { icon: <Building2 size={16} />, label: "Company", value: item.company || "—" },
+      { icon: <MessageSquare size={16} />, label: "Message", value: item.message },
+    ]
     : [
-        { icon: <User size={16} />, label: "First Name", value: item.firstName || "-" },
-        { icon: <User size={16} />, label: "Last Name", value: item.lastName || "-" },
-        { icon: <Phone size={16} />, label: "Mobile Number", value: item.mobileNumber || "-" },
-        { icon: <Mail size={16} />, label: "Email", value: item.email || "-" },
-        { icon: <MapPin size={16} />, label: "Address", value: item.address || "-" },
-        { icon: <Globe size={16} />, label: "State", value: item.state || "-" },
-        { icon: <Globe size={16} />, label: "Country", value: item.country || "-" },
-        { icon: <GraduationCap size={16} />, label: "University", value: item.university || "-" },
-        { icon: <Building2 size={16} />, label: "Affiliation", value: item.affiliation || "-" },
-        { icon: <BookOpen size={16} />, label: "Abstract Title", value: item.abstractTitle || "-" },
-        { icon: <Tag size={16} />, label: "Track / Interest", value: item.interestedIn || "-" },
-        { icon: <Linkedin size={16} />, label: "LinkedIn", value: item.linkedin || "-" },
-        { icon: <Twitter size={16} />, label: "Twitter", value: item.twitter || "-" },
-      ];
+      { icon: <User size={16} />, label: "First Name", value: item.firstName || "-" },
+      { icon: <User size={16} />, label: "Last Name", value: item.lastName || "-" },
+      { icon: <Phone size={16} />, label: "Mobile Number", value: item.mobileNumber || "-" },
+      { icon: <Mail size={16} />, label: "Email", value: item.email || "-" },
+      { icon: <MapPin size={16} />, label: "Address", value: item.address || "-" },
+      { icon: <Globe size={16} />, label: "State", value: item.state || "-" },
+      { icon: <Globe size={16} />, label: "Country", value: item.country || "-" },
+      { icon: <GraduationCap size={16} />, label: "University", value: item.university || "-" },
+      { icon: <Building2 size={16} />, label: "Affiliation", value: item.affiliation || "-" },
+      { icon: <BookOpen size={16} />, label: "Abstract Title", value: item.abstractTitle || "-" },
+      { icon: <Tag size={16} />, label: "Track / Interest", value: item.interestedIn || "-" },
+      { icon: <Linkedin size={16} />, label: "LinkedIn", value: item.linkedin || "-" },
+      { icon: <Twitter size={16} />, label: "Twitter", value: item.twitter || "-" },
+    ];
 
   return (
     <AnimatePresence>
@@ -250,7 +250,7 @@ const ViewModal = ({ item, type, onClose }) => {
               <motion.a
                 whileHover={{ scale: 1.02, boxShadow: "0 0 20px rgba(139,92,246,0.3)" }}
                 whileTap={{ scale: 0.97 }}
-                href={`${import.meta.env.VITE_API_URL}/abstracts/file/${item._id}`}
+                href={`${import.meta.env.VITE_ABSTRACT_API_URL}/abstracts/file/${item._id}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-center space-x-2 w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-2.5 rounded-xl transition-all mt-2"
@@ -384,7 +384,7 @@ const Dashboard = ({ onLogout }) => {
                 <ArrowLeft size={14} />
                 <span>Main Menu</span>
               </motion.button>
-              
+
               <motion.button
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -650,7 +650,7 @@ const ConferenceDetail = ({ conference, onBack }) => {
   const fetchAbstracts = useCallback(() => {
     setAbstractLoading(true);
     axios
-      .get(`${import.meta.env.VITE_API_URL}/abstracts/domain/${conference.domain}`)
+      .get(`${import.meta.env.VITE_ABSTRACT_API_URL}/abstracts/domain/${conference.domain}`)
       .then((res) => setAbstracts(Array.isArray(res.data) ? res.data : []))
       .catch((err) => { console.error("Abstract API Error:", err); setAbstracts([]); })
       .finally(() => setAbstractLoading(false));
@@ -716,11 +716,10 @@ const ConferenceDetail = ({ conference, onBack }) => {
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.96 }}
             onClick={() => setTab(t.key)}
-            className={`flex items-center space-x-2 px-5 py-2.5 rounded-xl font-medium text-sm transition-all ${
-              tab === t.key
+            className={`flex items-center space-x-2 px-5 py-2.5 rounded-xl font-medium text-sm transition-all ${tab === t.key
                 ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-900/30"
                 : "bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10"
-            }`}
+              }`}
           >
             {t.icon}
             <span>{t.label}</span>
@@ -892,7 +891,7 @@ const ConferenceDetail = ({ conference, onBack }) => {
                         <motion.a
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
-                          href={`${import.meta.env.VITE_API_URL}/abstracts/file/${a._id}`}
+                          href={`${import.meta.env.VITE_ABSTRACT_API_URL}/abstracts/file/${a._id}`}
                           className="flex items-center space-x-1 text-emerald-400 hover:text-emerald-300 text-sm transition-colors"
                           target="_blank"
                           rel="noopener noreferrer"
@@ -933,9 +932,8 @@ const EmailDetailsView = () => {
 
   const fetchEmails = useCallback(() => {
     setLoading(true);
-axios
-  .get("https://backend-code-6vqy.onrender.com/emails/getemail")
-  .then((res) => setEmails(Array.isArray(res.data.emails) ? res.data.emails : []))
+    axios.get(`${import.meta.env.VITE_API_URL}/emails/getemail`)
+      .then((res) => setEmails(Array.isArray(res.data.emails) ? res.data.emails : []))
       .catch((err) => {
         console.error("Email API Error:", err);
         setEmails([]);
@@ -1018,8 +1016,8 @@ axios
                   </div>
                   <div>
                     <h3 className="font-semibold text-white">{email.email}</h3>
-             
-                 
+
+
                   </div>
                 </div>
                 <div className="text-[10px] text-white/20 font-medium uppercase tracking-wider">
@@ -1045,8 +1043,7 @@ const ContactDetailsView = () => {
 
   const fetchContacts = useCallback(() => {
     setLoading(true);
-    axios
-      .get("https://backend-code-6vqy.onrender.com/contact/getcontactform")
+    axios.get(`${import.meta.env.VITE_API_URL}/contact/getcontactform`)
       .then((res) => setContacts(Array.isArray(res.data.data) ? res.data.data : []))
       .catch((err) => {
         console.error("Contact API Error:", err);
@@ -1145,7 +1142,7 @@ const ContactDetailsView = () => {
                 >
                   <td className="px-4 py-3 text-white/40">{i + 1}</td>
                   <td className="px-4 py-3 font-medium">
-                    {contact.name} 
+                    {contact.name}
                   </td>
                   <td className="px-4 py-3 text-indigo-300/80">{contact.email}</td>
                   <td className="px-4 py-3 text-white/70">{contact.subject || "—"}</td>
@@ -1230,10 +1227,10 @@ const HelixAbstractDetailsView = () => {
 
   const getFileUrl = (path) => {
     if (!path) return null;
-    
+
     // Handle case where path might be an object (e.g. from Cloudinary)
     const strPath = typeof path === 'string' ? path : (path.url || path.secure_url);
-    
+
     if (!strPath || typeof strPath !== 'string') return null;
 
     if (strPath.startsWith("http")) return strPath;
@@ -1245,8 +1242,7 @@ const HelixAbstractDetailsView = () => {
 
   const fetchAbstracts = useCallback(() => {
     setLoading(true);
-    axios
-      .get("https://helix-abstract-form-backend-1.onrender.com/api/forms/all")
+    axios.get(`${import.meta.env.VITE_ABSTRACT_API_URL}/api/forms/all`)
       .then((res) => {
         const data = Array.isArray(res.data) ? res.data : (res.data.data || []);
         setAbstracts(data);
@@ -1357,7 +1353,7 @@ const HelixAbstractDetailsView = () => {
                   <td className="px-4 py-3 text-white/60 max-w-xs truncate">{abstract.tracks || "—"}</td>
                   <td className="px-4 py-3 text-center">
                     <div className="flex items-center justify-center space-x-2">
-                       {abstract.abstract && (
+                      {abstract.abstract && (
                         <a href={getFileUrl(abstract.abstract)} target="_blank" rel="noopener noreferrer" title="View Abstract" className="text-emerald-400 hover:text-emerald-300 transition">
                           <FileText size={16} />
                         </a>
@@ -1405,7 +1401,7 @@ const HelixAbstractDetailsView = () => {
             </div>
 
             <div className="space-y-6 text-sm max-h-[75vh] overflow-y-auto pr-2 custom-scrollbar">
-              
+
               <div className="flex flex-col items-center">
                 {selectedAbstract.photo ? (
                   <div className="flex flex-col items-center space-y-4">
@@ -1430,7 +1426,7 @@ const HelixAbstractDetailsView = () => {
                     <User size={40} className="text-white/10" />
                   </div>
                 )}
-                
+
                 <div className="text-center mt-4">
                   <h3 className="text-white font-bold text-2xl leading-tight">
                     {selectedAbstract.firstName} {selectedAbstract.lastName}
