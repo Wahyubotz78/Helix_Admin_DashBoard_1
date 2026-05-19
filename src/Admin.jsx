@@ -165,17 +165,36 @@ const CONFERENCES = [
 const ViewModal = ({ item, type, onClose }) => {
   if (!item) return null;
   const isContact = type === "contact";
+  const isBrochure = type === "brochure";
+  const isAbstract = !isContact && !isBrochure;
 
-  const fields = isContact
-    ? [
+  let fields = [];
+  if (isContact) {
+    fields = [
       { icon: <User size={16} />, label: "First Name", value: item.firstName },
       { icon: <User size={16} />, label: "Last Name", value: item.lastName },
       { icon: <Mail size={16} />, label: "Email", value: item.email },
       { icon: <Phone size={16} />, label: "Phone", value: item.phone || "—" },
       { icon: <Building2 size={16} />, label: "Company", value: item.company || "—" },
       { icon: <MessageSquare size={16} />, label: "Message", value: item.message },
-    ]
-    : [
+    ];
+  } else if (isBrochure) {
+    fields = [
+      { icon: <User size={16} />, label: "First Name", value: item.firstName || "-" },
+      { icon: <User size={16} />, label: "Last Name", value: item.lastName || "-" },
+      { icon: <Phone size={16} />, label: "Mobile Number", value: item.mobileNumber || "-" },
+      { icon: <Mail size={16} />, label: "Email", value: item.email || "-" },
+      { icon: <MapPin size={16} />, label: "Address", value: item.address || "-" },
+      { icon: <Globe size={16} />, label: "State", value: item.state || "-" },
+      { icon: <Globe size={16} />, label: "Country", value: item.country || "-" },
+      { icon: <GraduationCap size={16} />, label: "University", value: item.university || "-" },
+      { icon: <Building2 size={16} />, label: "Affiliation", value: item.affiliation || "-" },
+      { icon: <Tag size={16} />, label: "Interested In", value: item.interestedIn || "-" },
+      { icon: <Linkedin size={16} />, label: "LinkedIn", value: item.linkedin || "-" },
+      { icon: <Twitter size={16} />, label: "Twitter", value: item.twitter || "-" },
+    ];
+  } else {
+    fields = [
       { icon: <User size={16} />, label: "First Name", value: item.firstName || "-" },
       { icon: <User size={16} />, label: "Last Name", value: item.lastName || "-" },
       { icon: <Phone size={16} />, label: "Mobile Number", value: item.mobileNumber || "-" },
@@ -190,6 +209,7 @@ const ViewModal = ({ item, type, onClose }) => {
       { icon: <Linkedin size={16} />, label: "LinkedIn", value: item.linkedin || "-" },
       { icon: <Twitter size={16} />, label: "Twitter", value: item.twitter || "-" },
     ];
+  }
 
   return (
     <AnimatePresence>
@@ -212,10 +232,10 @@ const ViewModal = ({ item, type, onClose }) => {
           <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
             <div className="flex items-center space-x-2">
               <span className="text-purple-400">
-                {isContact ? <Mail size={18} /> : <FileText size={18} />}
+                {isContact ? <Mail size={18} /> : isBrochure ? <Download size={18} /> : <FileText size={18} />}
               </span>
               <span className="font-semibold text-white">
-                {isContact ? "Contact Details" : "Abstract Details"}
+                {isContact ? "Contact Details" : isBrochure ? "Brochure Details" : "Abstract Details"}
               </span>
             </div>
             <motion.button
@@ -637,6 +657,9 @@ const ConferenceDetail = ({ conference, onBack }) => {
   const [abstractSearch, setAbstractSearch] = useState("");
   const [viewItem, setViewItem] = useState(null);
   const [viewType, setViewType] = useState(null);
+  const [brochures, setBrochures] = useState([]);
+  const [brochureLoading, setBrochureLoading] = useState(false);
+  const [brochureSearch, setBrochureSearch] = useState("");
 
   const fetchContacts = useCallback(() => {
     setLoading(true);
@@ -656,8 +679,18 @@ const ConferenceDetail = ({ conference, onBack }) => {
       .finally(() => setAbstractLoading(false));
   }, [conference.domain]);
 
+  const fetchBrochures = useCallback(() => {
+    setBrochureLoading(true);
+    axios
+      .get(`${import.meta.env.VITE_API_URL}/brochure-download/${conference.domain}`)
+      .then((res) => setBrochures(Array.isArray(res.data) ? res.data : []))
+      .catch((err) => { console.error("Brochure API Error:", err); setBrochures([]); })
+      .finally(() => setBrochureLoading(false));
+  }, [conference.domain]);
+
   useEffect(() => { fetchContacts(); }, [fetchContacts]);
   useEffect(() => { if (tab === "abstracts") fetchAbstracts(); }, [tab, fetchAbstracts]);
+  useEffect(() => { if (tab === "brochures") fetchBrochures(); }, [tab, fetchBrochures]);
 
   const filteredContacts = contacts.filter((c) => {
     const q = contactSearch.toLowerCase();
@@ -675,6 +708,15 @@ const ConferenceDetail = ({ conference, onBack }) => {
       a.email?.toLowerCase().includes(q) ||
       a.abstractTitle?.toLowerCase().includes(q) ||
       a.university?.toLowerCase().includes(q)
+    );
+  });
+
+  const filteredBrochures = brochures.filter((b) => {
+    const q = brochureSearch.toLowerCase();
+    return (
+      `${b.firstName} ${b.lastName}`.toLowerCase().includes(q) ||
+      b.email?.toLowerCase().includes(q) ||
+      b.university?.toLowerCase().includes(q)
     );
   });
 
@@ -705,11 +747,11 @@ const ConferenceDetail = ({ conference, onBack }) => {
         <p className="text-purple-300/60 text-sm mt-1">{conference.domain}</p>
       </motion.div>
 
-      {/* Tabs */}
       <div className="flex space-x-2 mb-6 flex-wrap gap-y-2">
         {[
           { key: "contact", label: "Contacts", icon: <Mail size={15} /> },
           { key: "abstracts", label: "Abstracts", icon: <FileText size={15} /> },
+          { key: "brochures", label: "Brochures", icon: <Download size={15} /> },
         ].map((t) => (
           <motion.button
             key={t.key}
@@ -802,6 +844,96 @@ const ConferenceDetail = ({ conference, onBack }) => {
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
                           onClick={() => openView(c, "contact")}
+                          className="flex items-center space-x-1 text-purple-400 hover:text-purple-300 text-sm transition-colors"
+                        >
+                          <Eye size={14} />
+                          <span>View</span>
+                        </motion.button>
+                      </td>
+                    </motion.tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </motion.div>
+      )}
+
+      {/* ---- BROCHURES TAB ---- */}
+      {tab === "brochures" && (
+        <motion.div
+          key="brochures-tab"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.25 }}
+        >
+          <div className="flex items-center space-x-3 mb-4">
+            <div className="relative flex-1">
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" />
+              <input
+                type="text"
+                value={brochureSearch}
+                onChange={(e) => setBrochureSearch(e.target.value)}
+                placeholder="Search brochures..."
+                className="w-full pl-9 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder-white/25 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/30 transition-all"
+              />
+            </div>
+            <motion.button
+              whileHover={{ scale: 1.06 }}
+              whileTap={{ scale: 0.93 }}
+              onClick={fetchBrochures}
+              disabled={brochureLoading}
+              className="flex items-center space-x-1.5 px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white/50 hover:text-purple-300 text-sm transition-all"
+            >
+              <RefreshCw size={14} className={brochureLoading ? "animate-spin" : ""} />
+              <span className="hidden sm:inline">Refresh</span>
+            </motion.button>
+          </div>
+
+          {brochureLoading && (
+            <div className="flex items-center justify-center space-x-2 text-purple-300/60 py-12">
+              <RefreshCw size={18} className="animate-spin" />
+              <span>Loading brochures...</span>
+            </div>
+          )}
+
+          {!brochureLoading && filteredBrochures.length === 0 && (
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-white/30 text-center py-12">
+              {brochures.length === 0 ? "No brochure downloads yet." : "No results match your search."}
+            </motion.p>
+          )}
+
+          {!brochureLoading && filteredBrochures.length > 0 && (
+            <div className="overflow-x-auto rounded-2xl border border-white/10">
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-white/5">
+                    {["Name", "Email", "Phone", "University", "Interest", ""].map((h) => (
+                      <th key={h} className="px-4 py-3 text-left text-xs text-white/40 font-medium uppercase tracking-wider">
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredBrochures.map((b, i) => (
+                    <motion.tr
+                      key={b._id}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.03 }}
+                      className="border-t border-white/5 hover:bg-purple-500/5 transition-colors"
+                    >
+                      <td className="px-4 py-3 text-sm font-medium text-white">{b.firstName} {b.lastName}</td>
+                      <td className="px-4 py-3 text-sm text-white/60">{b.email}</td>
+                      <td className="px-4 py-3 text-sm text-white/60">{b.mobileNumber || "—"}</td>
+                      <td className="px-4 py-3 text-sm text-white/60">{b.university || "—"}</td>
+                      <td className="px-4 py-3 text-sm text-white/60 max-w-xs truncate">{b.interestedIn || "—"}</td>
+                      <td className="px-4 py-3">
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={() => openView(b, "brochure")}
                           className="flex items-center space-x-1 text-purple-400 hover:text-purple-300 text-sm transition-colors"
                         >
                           <Eye size={14} />
