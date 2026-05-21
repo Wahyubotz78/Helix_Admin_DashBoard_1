@@ -31,6 +31,26 @@ import {
   Lock,
 } from "lucide-react";
 
+const handlePdfDownload = async (e, fileUrl, fallbackName) => {
+  if (e && e.preventDefault) e.preventDefault();
+  try {
+    const response = await fetch(fileUrl);
+    if (!response.ok) throw new Error("Network response was not ok");
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', fallbackName);
+    document.body.appendChild(link);
+    link.click();
+    link.parentNode.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("Error downloading PDF:", error);
+    window.open(fileUrl, '_blank');
+  }
+};
+
 /* ================= AUTH ================= */
 
 const Admin = () => {
@@ -267,17 +287,15 @@ const ViewModal = ({ item, type, onClose }) => {
             ))}
 
             {!isContact && item._id && (
-              <motion.a
+              <motion.button
                 whileHover={{ scale: 1.02, boxShadow: "0 0 20px rgba(139,92,246,0.3)" }}
                 whileTap={{ scale: 0.97 }}
-                href={`${import.meta.env.VITE_ABSTRACT_API_URL}/abstracts/file/${item._id}`}
-                target="_blank"
-                rel="noopener noreferrer"
+                onClick={(e) => handlePdfDownload(e, `${import.meta.env.VITE_ABSTRACT_API_URL}/abstracts/file/${item._id}`, `${item.firstName || 'abstract'}.pdf`)}
                 className="flex items-center justify-center space-x-2 w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-2.5 rounded-xl transition-all mt-2"
               >
                 <Download size={16} />
                 <span>Download PDF</span>
-              </motion.a>
+              </motion.button>
             )}
           </div>
         </motion.div>
@@ -1020,17 +1038,15 @@ const ConferenceDetail = ({ conference, onBack }) => {
                       <td className="px-4 py-3 text-sm text-white/60">{a.interestedIn}</td>
                       <td className="px-4 py-3 text-sm text-white/60">{a.university}</td>
                       <td className="px-4 py-3">
-                        <motion.a
+                        <motion.button
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
-                          href={`${import.meta.env.VITE_ABSTRACT_API_URL}/abstracts/file/${a._id}`}
+                          onClick={(e) => handlePdfDownload(e, `${import.meta.env.VITE_ABSTRACT_API_URL}/abstracts/file/${a._id}`, `${a.firstName || 'abstract'}.pdf`)}
                           className="flex items-center space-x-1 text-emerald-400 hover:text-emerald-300 text-sm transition-colors"
-                          target="_blank"
-                          rel="noopener noreferrer"
                         >
                           <Download size={14} />
                           <span>PDF</span>
-                        </motion.a>
+                        </motion.button>
                       </td>
                       <td className="px-4 py-3">
                         <motion.button
@@ -1486,14 +1502,14 @@ const HelixAbstractDetailsView = () => {
                   <td className="px-4 py-3 text-center">
                     <div className="flex items-center justify-center space-x-2">
                       {abstract.abstract && (
-                        <a href={getFileUrl(abstract.abstract)} target="_blank" rel="noopener noreferrer" title="View Abstract" className="text-emerald-400 hover:text-emerald-300 transition">
+                        <button onClick={(e) => handlePdfDownload(e, getFileUrl(abstract.abstract), `${abstract.firstName || 'abstract'}_document.pdf`)} title="Download Abstract" className="text-emerald-400 hover:text-emerald-300 transition">
                           <FileText size={16} />
-                        </a>
+                        </button>
                       )}
                       {abstract.biography && (
-                        <a href={getFileUrl(abstract.biography)} target="_blank" rel="noopener noreferrer" title="View Bio" className="text-blue-400 hover:text-blue-300 transition">
+                        <button onClick={(e) => handlePdfDownload(e, getFileUrl(abstract.biography), `${abstract.firstName || 'abstract'}_bio.pdf`)} title="Download Bio" className="text-blue-400 hover:text-blue-300 transition">
                           <User size={16} />
-                        </a>
+                        </button>
                       )}
                     </div>
                   </td>
@@ -1590,11 +1606,10 @@ const HelixAbstractDetailsView = () => {
 
               <div className="space-y-3 px-2 pt-2">
                 {selectedAbstract.abstract ? (
-                  <motion.a
+                  <motion.button
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.99 }}
-                    href={getFileUrl(selectedAbstract.abstract)}
-                    download
+                    onClick={(e) => handlePdfDownload(e, getFileUrl(selectedAbstract.abstract), `${selectedAbstract.firstName || 'abstract'}_document.pdf`)}
                     className="flex items-center justify-between w-full px-6 py-5 bg-gradient-to-r from-emerald-600/20 to-teal-600/20 hover:from-emerald-600/30 hover:to-teal-600/30 text-emerald-300 rounded-2xl border border-emerald-500/30 transition-all group shadow-lg shadow-emerald-500/5"
                   >
                     <div className="flex items-center space-x-4">
@@ -1604,7 +1619,7 @@ const HelixAbstractDetailsView = () => {
                       <span className="font-black text-xs tracking-tighter uppercase italic">Download Abstract PDF</span>
                     </div>
                     <Download size={18} className="group-hover:translate-y-0.5 transition-transform" />
-                  </motion.a>
+                  </motion.button>
                 ) : (
                   <div className="flex items-center px-6 py-5 bg-white/5 text-white/20 rounded-2xl border border-white/5 opacity-40 italic text-xs">
                     No Abstract PDF uploaded
@@ -1612,11 +1627,10 @@ const HelixAbstractDetailsView = () => {
                 )}
 
                 {selectedAbstract.biography ? (
-                  <motion.a
+                  <motion.button
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.99 }}
-                    href={getFileUrl(selectedAbstract.biography)}
-                    download
+                    onClick={(e) => handlePdfDownload(e, getFileUrl(selectedAbstract.biography), `${selectedAbstract.firstName || 'abstract'}_bio.pdf`)}
                     className="flex items-center justify-between w-full px-6 py-5 bg-gradient-to-r from-blue-600/20 to-indigo-600/20 hover:from-blue-600/30 hover:to-indigo-600/30 text-blue-300 rounded-2xl border border-blue-500/30 transition-all group shadow-lg shadow-blue-500/5"
                   >
                     <div className="flex items-center space-x-4">
@@ -1626,7 +1640,7 @@ const HelixAbstractDetailsView = () => {
                       <span className="font-black text-xs tracking-tighter uppercase italic">Download Bio PDF</span>
                     </div>
                     <Download size={18} className="group-hover:translate-y-0.5 transition-transform" />
-                  </motion.a>
+                  </motion.button>
                 ) : (
                   <div className="flex items-center px-6 py-5 bg-white/5 text-white/20 rounded-2xl border border-white/5 opacity-40 italic text-xs">
                     No Biography PDF uploaded
