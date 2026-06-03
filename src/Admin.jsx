@@ -186,10 +186,17 @@ const ViewModal = ({ item, type, onClose }) => {
   if (!item) return null;
   const isContact = type === "contact";
   const isBrochure = type === "brochure";
-  const isAbstract = !isContact && !isBrochure;
+  const isChatbotContact = type === "chatbotContact";
+  const isAbstract = !isContact && !isBrochure && !isChatbotContact;
 
   let fields = [];
-  if (isContact) {
+  if (isChatbotContact) {
+    fields = [
+      { icon: <User size={16} />, label: "Name", value: item.name },
+      { icon: <Mail size={16} />, label: "Email", value: item.email },
+      { icon: <Phone size={16} />, label: "Phone", value: item.phone || "—" },
+    ];
+  } else if (isContact) {
     fields = [
       { icon: <User size={16} />, label: "First Name", value: item.firstName },
       { icon: <User size={16} />, label: "Last Name", value: item.lastName },
@@ -252,10 +259,10 @@ const ViewModal = ({ item, type, onClose }) => {
           <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
             <div className="flex items-center space-x-2">
               <span className="text-purple-400">
-                {isContact ? <Mail size={18} /> : isBrochure ? <Download size={18} /> : <FileText size={18} />}
+                {isContact || isChatbotContact ? <Mail size={18} /> : isBrochure ? <Download size={18} /> : <FileText size={18} />}
               </span>
               <span className="font-semibold text-white">
-                {isContact ? "Contact Details" : isBrochure ? "Brochure Details" : "Abstract Details"}
+                {isChatbotContact ? "Chatbot Contact Details" : isContact ? "Contact Details" : isBrochure ? "Brochure Details" : "Abstract Details"}
               </span>
             </div>
             <motion.button
@@ -286,7 +293,7 @@ const ViewModal = ({ item, type, onClose }) => {
               </motion.div>
             ))}
 
-            {!isContact && item._id && (
+            {isAbstract && item._id && (
               <motion.button
                 whileHover={{ scale: 1.02, boxShadow: "0 0 20px rgba(139,92,246,0.3)" }}
                 whileTap={{ scale: 0.97 }}
@@ -331,7 +338,11 @@ const Dashboard = ({ onLogout }) => {
   };
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-[#0f0c29] via-[#1a1040] to-[#24243e] text-white overflow-hidden">
+    <div className="flex h-screen bg-gradient-to-br from-[#020617] via-[#0f172a] to-[#1e1b4b] font-sans text-white overflow-hidden relative">
+      {/* Global Ambient Lighting */}
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-violet-600/20 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-fuchsia-600/20 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute top-[40%] right-[20%] w-[30%] h-[30%] bg-cyan-600/10 rounded-full blur-[100px] pointer-events-none" />
 
       {/* Mobile overlay */}
       <AnimatePresence>
@@ -353,13 +364,13 @@ const Dashboard = ({ onLogout }) => {
         className={`
           fixed lg:static inset-y-0 left-0 z-30
           w-64 flex flex-col
-          bg-white/5 backdrop-blur-xl border-r border-white/10
+          bg-white/[0.02] backdrop-blur-3xl border-r border-white/[0.05] shadow-2xl
           transition-transform duration-300
           ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
         `}
       >
         {/* Logo area */}
-        <div className="p-5 border-b border-white/10">
+        <div className="p-5 border-b border-white/[0.05]">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 rounded-xl overflow-hidden ring-1 ring-purple-500/40 shrink-0">
               <img
@@ -369,8 +380,8 @@ const Dashboard = ({ onLogout }) => {
               />
             </div>
             <div>
-              <p className="font-bold text-white leading-tight">Helix Admin</p>
-              <p className="text-xs text-purple-300/60">Conferences Portal</p>
+              <p className="font-bold text-white leading-tight font-outfit text-lg tracking-wide">Helix Admin</p>
+              <p className="text-[11px] font-medium text-fuchsia-300/60 uppercase tracking-widest mt-0.5">Conferences Portal</p>
             </div>
           </div>
         </div>
@@ -388,15 +399,15 @@ const Dashboard = ({ onLogout }) => {
                 whileTap={{ scale: 0.97 }}
                 onClick={() => handleNavClick(item.key)}
                 className={`
-                  w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all
+                  w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all font-outfit tracking-wide
                   ${activeNav === item.key
-                    ? "bg-gradient-to-r from-purple-600/80 to-indigo-600/80 text-white shadow-lg shadow-purple-900/30"
-                    : "text-white/50 hover:text-white hover:bg-white/8"
+                    ? "bg-gradient-to-r from-violet-600/90 to-fuchsia-600/90 text-white shadow-lg shadow-violet-900/30"
+                    : "text-white/50 hover:text-white hover:bg-white/5"
                   }
                 `}
               >
                 <span className="flex items-center space-x-3">
-                  <span className={activeNav === item.key ? "text-white" : "text-purple-400"}>
+                  <span className={activeNav === item.key ? "text-white" : "text-violet-400"}>
                     {item.icon}
                   </span>
                   <span>{item.label}</span>
@@ -430,15 +441,15 @@ const Dashboard = ({ onLogout }) => {
                 whileTap={{ scale: 0.97 }}
                 onClick={() => setActiveNav("emails")}
                 className={`
-                  w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all
+                  w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all font-outfit tracking-wide
                   ${activeNav === "emails"
-                    ? "bg-gradient-to-r from-purple-600/80 to-indigo-600/80 text-white shadow-lg shadow-purple-900/30"
-                    : "text-white/50 hover:text-white hover:bg-white/8"
+                    ? "bg-gradient-to-r from-violet-600/90 to-fuchsia-600/90 text-white shadow-lg shadow-violet-900/30"
+                    : "text-white/50 hover:text-white hover:bg-white/5"
                   }
                 `}
               >
                 <span className="flex items-center space-x-3">
-                  <Mail size={18} className={activeNav === "emails" ? "text-white" : "text-purple-400"} />
+                  <Mail size={18} className={activeNav === "emails" ? "text-white" : "text-violet-400"} />
                   <span>Email Details</span>
                 </span>
                 {activeNav === "emails" && <ChevronRight size={14} />}
@@ -452,10 +463,10 @@ const Dashboard = ({ onLogout }) => {
                 whileTap={{ scale: 0.97 }}
                 onClick={() => setActiveNav("contacts")}
                 className={`
-                  w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all
+                  w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all font-outfit tracking-wide
                   ${activeNav === "contacts"
-                    ? "bg-gradient-to-r from-indigo-600/80 to-blue-600/80 text-white shadow-lg shadow-indigo-900/30"
-                    : "text-white/50 hover:text-white hover:bg-white/8"
+                    ? "bg-gradient-to-r from-indigo-600/90 to-blue-600/90 text-white shadow-lg shadow-indigo-900/30"
+                    : "text-white/50 hover:text-white hover:bg-white/5"
                   }
                 `}
               >
@@ -464,6 +475,28 @@ const Dashboard = ({ onLogout }) => {
                   <span>Contact Details</span>
                 </span>
                 {activeNav === "contacts" && <ChevronRight size={14} />}
+              </motion.button>
+
+              <motion.button
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
+                whileHover={{ x: 4 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => setActiveNav("chatbotContacts")}
+                className={`
+                  w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all font-outfit tracking-wide
+                  ${activeNav === "chatbotContacts"
+                    ? "bg-gradient-to-r from-cyan-600/90 to-teal-600/90 text-white shadow-lg shadow-cyan-900/30"
+                    : "text-white/50 hover:text-white hover:bg-white/5"
+                  }
+                `}
+              >
+                <span className="flex items-center space-x-3">
+                  <User size={18} className={activeNav === "chatbotContacts" ? "text-white" : "text-cyan-400"} />
+                  <span>Chatbot Contacts</span>
+                </span>
+                {activeNav === "chatbotContacts" && <ChevronRight size={14} />}
               </motion.button>
             </div>
           )}
@@ -507,6 +540,10 @@ const Dashboard = ({ onLogout }) => {
 
             {isHelixSubMenu && activeNav === "contacts" && (
               <ContactDetailsView key="contacts" />
+            )}
+
+            {isHelixSubMenu && activeNav === "chatbotContacts" && (
+              <ChatbotContactsView key="chatbotContacts" />
             )}
 
             {!isHelixSubMenu && activeNav === "abstracts" && (
@@ -568,8 +605,8 @@ const HelixConferencesView = ({ onSelectConference }) => (
       animate={{ opacity: 1, y: 0 }}
       className="mb-6"
     >
-      <h1 className="text-2xl md:text-3xl font-bold text-white">Helix Conferences</h1>
-      <p className="text-purple-300/60 text-sm mt-1">
+      <h1 className="text-2xl md:text-3xl font-bold text-white font-outfit tracking-wide">Helix Conferences</h1>
+      <p className="text-violet-300/60 text-sm mt-1">
         {CONFERENCES.length} active conferences worldwide
       </p>
     </motion.div>
@@ -588,20 +625,20 @@ const HelixConferencesView = ({ onSelectConference }) => (
           }}
           whileTap={{ scale: 0.97 }}
           onClick={() => onSelectConference(conf)}
-          className="group bg-white/5 border border-white/10 rounded-2xl p-5 cursor-pointer transition-all relative overflow-hidden"
+          className="group bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-3xl p-5 cursor-pointer transition-all relative overflow-hidden"
         >
           {/* Glow accent */}
-          <div className="absolute top-0 right-0 w-20 h-20 bg-purple-500/10 rounded-full blur-2xl group-hover:bg-purple-500/20 transition-all" />
+          <div className="absolute top-0 right-0 w-24 h-24 bg-violet-500/10 rounded-full blur-3xl group-hover:bg-violet-500/30 transition-all duration-500" />
 
-          <div className="flex items-start justify-between mb-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-purple-900/30">
-              <CalendarDays size={16} className="text-white" />
+          <div className="flex items-start justify-between mb-4 relative z-10">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-600 flex items-center justify-center shadow-lg shadow-violet-900/40">
+              <CalendarDays size={18} className="text-white" />
             </div>
-            <ChevronRight size={16} className="text-white/20 group-hover:text-purple-400 transition-colors" />
+            <ChevronRight size={18} className="text-white/20 group-hover:text-violet-400 group-hover:translate-x-1 transition-all" />
           </div>
 
-          <h3 className="font-bold text-white text-sm leading-tight mb-1">{conf.name}</h3>
-          <p className="text-xs text-purple-300/60 truncate">{conf.domain}</p>
+          <h3 className="font-bold text-white text-[15px] leading-tight mb-1 font-outfit relative z-10">{conf.name}</h3>
+          <p className="text-xs text-violet-300/60 truncate relative z-10">{conf.domain}</p>
         </motion.div>
       ))}
     </div>
@@ -617,8 +654,8 @@ const SubdomainsView = ({ onSelectConference }) => (
       animate={{ opacity: 1, y: 0 }}
       className="mb-6"
     >
-      <h1 className="text-2xl md:text-3xl font-bold text-white">Subdomains</h1>
-      <p className="text-purple-300/60 text-sm mt-1">
+      <h1 className="text-2xl md:text-3xl font-bold text-white font-outfit tracking-wide">Subdomains</h1>
+      <p className="text-indigo-300/60 text-sm mt-1">
         Select a conference to view submissions
       </p>
     </motion.div>
@@ -637,21 +674,21 @@ const SubdomainsView = ({ onSelectConference }) => (
           }}
           whileTap={{ scale: 0.97 }}
           onClick={() => onSelectConference(conf)}
-          className="group bg-white/5 border border-white/10 rounded-2xl p-5 cursor-pointer transition-all relative overflow-hidden"
+          className="group bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-3xl p-5 cursor-pointer transition-all relative overflow-hidden"
         >
-          <div className="absolute bottom-0 left-0 w-24 h-24 bg-indigo-500/10 rounded-full blur-2xl group-hover:bg-indigo-500/20 transition-all" />
+          <div className="absolute bottom-0 left-0 w-28 h-28 bg-cyan-500/10 rounded-full blur-3xl group-hover:bg-cyan-500/20 transition-all duration-500" />
 
-          <div className="flex items-start justify-between mb-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-600 to-blue-600 flex items-center justify-center shadow-lg shadow-indigo-900/30">
-              <Network size={16} className="text-white" />
+          <div className="flex items-start justify-between mb-4 relative z-10">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-600 to-cyan-600 flex items-center justify-center shadow-lg shadow-cyan-900/40">
+              <Network size={18} className="text-white" />
             </div>
-            <span className="text-[10px] text-indigo-300/60 bg-indigo-500/10 px-2 py-0.5 rounded-full border border-indigo-500/20">
+            <span className="text-[10px] text-cyan-300/80 bg-cyan-500/10 px-2.5 py-1 rounded-full border border-cyan-500/30 font-bold uppercase tracking-wider">
               Active
             </span>
           </div>
 
-          <h3 className="font-bold text-white text-sm leading-tight mb-1">{conf.name}</h3>
-          <p className="text-xs text-indigo-300/60 truncate">{conf.domain}</p>
+          <h3 className="font-bold text-white text-[15px] leading-tight mb-1 font-outfit relative z-10">{conf.name}</h3>
+          <p className="text-xs text-cyan-300/60 truncate relative z-10">{conf.domain}</p>
 
           <div className="mt-3 flex items-center text-indigo-400/60 text-xs group-hover:text-indigo-300 transition-colors">
             <span>View submissions</span>
@@ -922,12 +959,12 @@ const ConferenceDetail = ({ conference, onBack }) => {
           )}
 
           {!brochureLoading && filteredBrochures.length > 0 && (
-            <div className="overflow-x-auto rounded-2xl border border-white/10">
-              <table className="w-full">
+            <div className="overflow-x-auto custom-scrollbar glass-panel rounded-3xl">
+              <table className="w-full text-sm text-left font-sans">
                 <thead>
-                  <tr className="bg-white/5">
+                  <tr className="bg-white/[0.05] border-b border-white/10">
                     {["Name", "Email", "Phone", "University", "Interest", ""].map((h) => (
-                      <th key={h} className="px-4 py-3 text-left text-xs text-white/40 font-medium uppercase tracking-wider">
+                      <th key={h} className="px-5 py-4 text-xs text-fuchsia-300/70 font-outfit font-bold uppercase tracking-widest">
                         {h}
                       </th>
                     ))}
@@ -940,23 +977,20 @@ const ConferenceDetail = ({ conference, onBack }) => {
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.03 }}
-                      className="border-t border-white/5 hover:bg-purple-500/5 transition-colors"
+                      className="border-b border-white/[0.05] hover:bg-white/[0.04] transition-colors last:border-0"
                     >
-                      <td className="px-4 py-3 text-sm font-medium text-white">{b.firstName} {b.lastName}</td>
-                      <td className="px-4 py-3 text-sm text-white/60">{b.email}</td>
-                      <td className="px-4 py-3 text-sm text-white/60">{b.mobileNumber || "—"}</td>
-                      <td className="px-4 py-3 text-sm text-white/60">{b.university || "—"}</td>
-                      <td className="px-4 py-3 text-sm text-white/60 max-w-xs truncate">{b.interestedIn || "—"}</td>
-                      <td className="px-4 py-3">
-                        <motion.button
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
+                      <td className="px-5 py-4 font-medium text-white">{b.firstName} {b.lastName}</td>
+                      <td className="px-5 py-4 text-fuchsia-300/80">{b.email}</td>
+                      <td className="px-5 py-4 text-white/70">{b.mobileNumber || "—"}</td>
+                      <td className="px-5 py-4 text-white/70">{b.university || "—"}</td>
+                      <td className="px-5 py-4 text-white/60 max-w-xs truncate">{b.interestedIn || "—"}</td>
+                      <td className="px-5 py-4 text-center">
+                        <button
                           onClick={() => openView(b, "brochure")}
-                          className="flex items-center space-x-1 text-purple-400 hover:text-purple-300 text-sm transition-colors"
+                          className="px-3 py-1.5 bg-fuchsia-500/10 hover:bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/20 hover:border-fuchsia-500/40 rounded-lg transition-all text-xs font-semibold tracking-wide"
                         >
-                          <Eye size={14} />
-                          <span>View</span>
-                        </motion.button>
+                          View
+                        </button>
                       </td>
                     </motion.tr>
                   ))}
@@ -1012,12 +1046,12 @@ const ConferenceDetail = ({ conference, onBack }) => {
           )}
 
           {!abstractLoading && filteredAbstracts.length > 0 && (
-            <div className="overflow-x-auto rounded-2xl border border-white/10">
-              <table className="w-full">
+            <div className="overflow-x-auto custom-scrollbar glass-panel rounded-3xl">
+              <table className="w-full text-sm text-left font-sans">
                 <thead>
-                  <tr className="bg-white/5">
+                  <tr className="bg-white/[0.05] border-b border-white/10">
                     {["Name", "Email", "Title", "Track", "University", "PDF", ""].map((h) => (
-                      <th key={h} className="px-4 py-3 text-left text-xs text-white/40 font-medium uppercase tracking-wider">
+                      <th key={h} className="px-5 py-4 text-xs text-violet-300/70 font-outfit font-bold uppercase tracking-widest">
                         {h}
                       </th>
                     ))}
@@ -1030,34 +1064,29 @@ const ConferenceDetail = ({ conference, onBack }) => {
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.03 }}
-                      className="border-t border-white/5 hover:bg-indigo-500/5 transition-colors"
+                      className="border-b border-white/[0.05] hover:bg-white/[0.04] transition-colors last:border-0"
                     >
-                      <td className="px-4 py-3 text-sm font-medium text-white">{a.firstName} {a.lastName}</td>
-                      <td className="px-4 py-3 text-sm text-white/60">{a.email}</td>
-                      <td className="px-4 py-3 text-sm text-white/60 max-w-xs truncate">{a.abstractTitle}</td>
-                      <td className="px-4 py-3 text-sm text-white/60">{a.interestedIn}</td>
-                      <td className="px-4 py-3 text-sm text-white/60">{a.university}</td>
-                      <td className="px-4 py-3">
-                        <motion.button
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
+                      <td className="px-5 py-4 font-medium text-white">{a.firstName} {a.lastName}</td>
+                      <td className="px-5 py-4 text-violet-300/80">{a.email}</td>
+                      <td className="px-5 py-4 text-white/70 max-w-xs truncate">{a.abstractTitle}</td>
+                      <td className="px-5 py-4 text-white/70">{a.interestedIn}</td>
+                      <td className="px-5 py-4 text-white/70">{a.university}</td>
+                      <td className="px-5 py-4">
+                        <button
                           onClick={(e) => handlePdfDownload(e, `${import.meta.env.VITE_ABSTRACT_API_URL}/abstracts/file/${a._id}`, `${a.firstName || 'abstract'}.pdf`)}
-                          className="flex items-center space-x-1 text-emerald-400 hover:text-emerald-300 text-sm transition-colors"
+                          className="px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/20 hover:border-emerald-500/40 rounded-lg transition-all text-xs font-semibold tracking-wide flex items-center space-x-1"
                         >
                           <Download size={14} />
                           <span>PDF</span>
-                        </motion.button>
+                        </button>
                       </td>
-                      <td className="px-4 py-3">
-                        <motion.button
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
+                      <td className="px-5 py-4 text-center">
+                        <button
                           onClick={() => openView(a, "abstract")}
-                          className="flex items-center space-x-1 text-purple-400 hover:text-purple-300 text-sm transition-colors"
+                          className="px-3 py-1.5 bg-violet-500/10 hover:bg-violet-500/20 text-violet-300 border border-violet-500/20 hover:border-violet-500/40 rounded-lg transition-all text-xs font-semibold tracking-wide"
                         >
-                          <Eye size={14} />
-                          <span>View</span>
-                        </motion.button>
+                          View
+                        </button>
                       </td>
                     </motion.tr>
                   ))}
@@ -1111,8 +1140,8 @@ const EmailDetailsView = () => {
     >
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-white">Email Details</h1>
-          <p className="text-purple-300/60 text-sm mt-1">Manage and view all email communications</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-white font-outfit tracking-wide">Email Details</h1>
+          <p className="text-violet-300/60 text-sm mt-1">Manage and view all email communications</p>
         </div>
         <div className="flex items-center space-x-3">
           <div className="relative flex-1 md:w-64">
@@ -1122,7 +1151,7 @@ const EmailDetailsView = () => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search emails…"
-              className="w-full pl-9 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder-white/25 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/30 transition-all"
+              className="w-full pl-9 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder-white/25 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500/30 transition-all font-sans"
             />
           </div>
           <motion.button
@@ -1155,12 +1184,12 @@ const EmailDetailsView = () => {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.05 }}
-              className="group bg-white/5 border border-white/10 rounded-2xl p-5 hover:border-purple-500/30 transition-all"
+              className="group glass-panel rounded-2xl p-5 hover:border-violet-500/50 transition-all"
             >
               <div className="flex items-start justify-between">
                 <div className="flex items-start space-x-4">
-                  <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center shrink-0">
-                    <User size={18} className="text-purple-400" />
+                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-violet-600/20 to-fuchsia-600/20 flex items-center justify-center shrink-0 border border-violet-500/20">
+                    <User size={18} className="text-violet-400" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-white">{email.email}</h3>
@@ -1224,7 +1253,7 @@ const ContactDetailsView = () => {
       {/* Header & Search */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-white">
+          <h1 className="text-2xl md:text-3xl font-bold text-white font-outfit tracking-wide">
             Contact Form Submissions
             <span className="ml-3 text-sm font-medium text-indigo-300/70">
               ({filteredContacts.length} Total)
@@ -1242,7 +1271,7 @@ const ContactDetailsView = () => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search contacts…"
-              className="w-full pl-9 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder-white/25 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 transition-all"
+              className="w-full pl-9 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder-white/25 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 transition-all font-sans"
             />
           </div>
           <motion.button
@@ -1270,35 +1299,35 @@ const ContactDetailsView = () => {
         </div>
       ) : (
         /* Table */
-        <div className="overflow-x-auto bg-white/5 border border-white/10 rounded-2xl">
-          <table className="min-w-full text-sm text-left text-white">
-            <thead className="bg-white/5 text-xs uppercase tracking-wider text-indigo-300/70">
+        <div className="overflow-x-auto custom-scrollbar glass-panel rounded-3xl">
+          <table className="min-w-full text-sm text-left text-white font-sans">
+            <thead className="bg-white/[0.05] text-xs uppercase tracking-widest text-indigo-300/70 font-outfit font-bold border-b border-white/10">
               <tr>
-                <th className="px-4 py-3">Sl.No</th>
-                <th className="px-4 py-3">Name</th>
-                <th className="px-4 py-3">Email</th>
-                <th className="px-4 py-3">Subject</th>
-                <th className="px-4 py-3">Message</th>
-                <th className="px-4 py-3 text-center">Action</th>
+                <th className="px-5 py-4">Sl.No</th>
+                <th className="px-5 py-4">Name</th>
+                <th className="px-5 py-4">Email</th>
+                <th className="px-5 py-4">Subject</th>
+                <th className="px-5 py-4">Message</th>
+                <th className="px-5 py-4 text-center">Action</th>
               </tr>
             </thead>
             <tbody>
               {filteredContacts.map((contact, i) => (
                 <tr
                   key={contact._id || i}
-                  className="border-t border-white/10 hover:bg-white/5 transition"
+                  className="border-b border-white/[0.05] hover:bg-white/[0.04] transition-colors last:border-0"
                 >
-                  <td className="px-4 py-3 text-white/40">{i + 1}</td>
-                  <td className="px-4 py-3 font-medium">
+                  <td className="px-5 py-4 text-white/40">{i + 1}</td>
+                  <td className="px-5 py-4 font-medium">
                     {contact.name}
                   </td>
-                  <td className="px-4 py-3 text-indigo-300/80">{contact.email}</td>
-                  <td className="px-4 py-3 text-white/70">{contact.subject || "—"}</td>
-                  <td className="px-4 py-3 max-w-xs truncate text-white/60">{contact.message}</td>
-                  <td className="px-4 py-3 text-center">
+                  <td className="px-5 py-4 text-indigo-300/80">{contact.email}</td>
+                  <td className="px-5 py-4 text-white/70">{contact.subject || "—"}</td>
+                  <td className="px-5 py-4 max-w-xs truncate text-white/60">{contact.message}</td>
+                  <td className="px-5 py-4 text-center">
                     <button
                       onClick={() => setSelectedContact(contact)}
-                      className="px-3 py-1.5 rounded-lg bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500/20 transition text-xs"
+                      className="px-3 py-1.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/20 hover:border-indigo-500/40 rounded-lg transition-all text-xs font-semibold tracking-wide"
                     >
                       View
                     </button>
@@ -1427,7 +1456,7 @@ const HelixAbstractDetailsView = () => {
       {/* Header & Search */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-white">
+          <h1 className="text-2xl md:text-3xl font-bold text-white font-outfit tracking-wide">
             Helix Abstract Submissions
             <span className="ml-3 text-sm font-medium text-emerald-300/70">
               ({filteredAbstracts.length} Total)
@@ -1445,7 +1474,7 @@ const HelixAbstractDetailsView = () => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search abstracts…"
-              className="w-full pl-9 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder-white/25 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 transition-all"
+              className="w-full pl-9 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder-white/25 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 transition-all font-sans"
             />
           </div>
           <motion.button
@@ -1471,35 +1500,35 @@ const HelixAbstractDetailsView = () => {
           <p className="text-white/30">No abstract submissions found</p>
         </div>
       ) : (
-        <div className="overflow-x-auto bg-white/5 border border-white/10 rounded-2xl">
-          <table className="min-w-full text-sm text-left text-white">
-            <thead className="bg-white/5 text-xs uppercase tracking-wider text-emerald-300/70">
+        <div className="overflow-x-auto custom-scrollbar glass-panel rounded-3xl">
+          <table className="min-w-full text-sm text-left text-white font-sans">
+            <thead className="bg-white/[0.05] text-xs uppercase tracking-widest text-emerald-300/70 font-outfit font-bold border-b border-white/10">
               <tr>
-                <th className="px-4 py-3">Sl.No</th>
-                <th className="px-4 py-3">Name</th>
-                <th className="px-4 py-3">Affiliation</th>
-                <th className="px-4 py-3">University</th>
-                <th className="px-4 py-3">Country</th>
-                <th className="px-4 py-3">Track</th>
-                <th className="px-4 py-3 text-center">Files</th>
-                <th className="px-4 py-3 text-center">Action</th>
+                <th className="px-5 py-4">Sl.No</th>
+                <th className="px-5 py-4">Name</th>
+                <th className="px-5 py-4">Affiliation</th>
+                <th className="px-5 py-4">University</th>
+                <th className="px-5 py-4">Country</th>
+                <th className="px-5 py-4">Track</th>
+                <th className="px-5 py-4 text-center">Files</th>
+                <th className="px-5 py-4 text-center">Action</th>
               </tr>
             </thead>
             <tbody>
               {filteredAbstracts.map((abstract, i) => (
                 <tr
                   key={abstract._id || i}
-                  className="border-t border-white/10 hover:bg-white/5 transition"
+                  className="border-b border-white/[0.05] hover:bg-white/[0.04] transition-colors last:border-0"
                 >
-                  <td className="px-4 py-3 text-white/40">{i + 1}</td>
-                  <td className="px-4 py-3 font-medium">
+                  <td className="px-5 py-4 text-white/40">{i + 1}</td>
+                  <td className="px-5 py-4 font-medium">
                     {abstract.firstName} {abstract.lastName}
                   </td>
-                  <td className="px-4 py-3 text-white/70">{abstract.affiliation || "—"}</td>
-                  <td className="px-4 py-3 text-white/60">{abstract.university || "—"}</td>
-                  <td className="px-4 py-3 text-emerald-300/80">{abstract.country || "—"}</td>
-                  <td className="px-4 py-3 text-white/60 max-w-xs truncate">{abstract.tracks || "—"}</td>
-                  <td className="px-4 py-3 text-center">
+                  <td className="px-5 py-4 text-white/70">{abstract.affiliation || "—"}</td>
+                  <td className="px-5 py-4 text-white/60">{abstract.university || "—"}</td>
+                  <td className="px-5 py-4 text-emerald-300/80">{abstract.country || "—"}</td>
+                  <td className="px-5 py-4 text-white/60 max-w-xs truncate">{abstract.tracks || "—"}</td>
+                  <td className="px-5 py-4 text-center">
                     <div className="flex items-center justify-center space-x-2">
                       {abstract.abstract && (
                         <button onClick={(e) => handlePdfDownload(e, getFileUrl(abstract.abstract), `${abstract.firstName || 'abstract'}_document.pdf`)} title="Download Abstract" className="text-emerald-400 hover:text-emerald-300 transition">
@@ -1513,10 +1542,10 @@ const HelixAbstractDetailsView = () => {
                       )}
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-center">
+                  <td className="px-5 py-4 text-center">
                     <button
                       onClick={() => setSelectedAbstract(abstract)}
-                      className="px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 transition text-xs"
+                      className="px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/20 hover:border-emerald-500/40 rounded-lg transition-all text-xs font-semibold tracking-wide"
                     >
                       View
                     </button>
@@ -1654,5 +1683,134 @@ const HelixAbstractDetailsView = () => {
     </motion.div>
   );
 };
+const ChatbotContactsView = () => {
+  const [contacts, setContacts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [search, setSearch] = useState("");
+  const [selectedContact, setSelectedContact] = useState(null);
+
+  const fetchContacts = useCallback(() => {
+    setLoading(true);
+    axios.get(`${import.meta.env.VITE_API_URL}/api/chatbot/users`)
+      .then((res) => setContacts(Array.isArray(res.data.data) ? res.data.data : []))
+      .catch((err) => {
+        console.error("Chatbot API Error:", err);
+        setContacts([]);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    fetchContacts();
+  }, [fetchContacts]);
+
+  const filteredContacts = contacts.filter((c) => {
+    const q = search.toLowerCase();
+    return (
+      c.name?.toLowerCase().includes(q) ||
+      c.email?.toLowerCase().includes(q) ||
+      c.phone?.toLowerCase().includes(q)
+    );
+  });
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="space-y-6"
+    >
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold text-white font-outfit tracking-wide">
+            Chatbot Contacts
+            <span className="ml-3 text-sm font-medium text-cyan-300/70">
+              ({filteredContacts.length} Total)
+            </span>
+          </h1>
+          <p className="text-blue-300/60 text-sm mt-1">
+            Review user details collected via chatbot
+          </p>
+        </div>
+        <div className="flex items-center space-x-3">
+          <div className="relative flex-1 md:w-64">
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search contacts…"
+              className="w-full pl-9 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder-white/25 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 transition-all font-sans"
+            />
+          </div>
+          <motion.button
+            whileHover={{ scale: 1.06 }}
+            whileTap={{ scale: 0.93 }}
+            onClick={fetchContacts}
+            disabled={loading}
+            className="flex items-center space-x-1.5 px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white/50 hover:text-cyan-300 text-sm transition-all"
+          >
+            <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
+            <span className="hidden sm:inline">Refresh</span>
+          </motion.button>
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="flex items-center justify-center py-20">
+          <RefreshCw size={24} className="text-cyan-500 animate-spin" />
+        </div>
+      ) : filteredContacts.length === 0 ? (
+        <div className="text-center py-20 bg-white/5 rounded-2xl border border-white/10">
+          <MessageSquare size={40} className="mx-auto text-white/10 mb-3" />
+          <p className="text-white/30">No chatbot contacts found</p>
+        </div>
+      ) : (
+        <div className="overflow-x-auto custom-scrollbar glass-panel rounded-3xl">
+          <table className="min-w-full text-sm text-left text-white font-sans">
+            <thead className="bg-white/[0.05] text-xs uppercase tracking-widest text-cyan-300/70 font-outfit font-bold border-b border-white/10">
+              <tr>
+                <th className="px-4 py-3">Sl.No</th>
+                <th className="px-4 py-3">Name</th>
+                <th className="px-4 py-3">Email</th>
+                <th className="px-4 py-3">Phone</th>
+                <th className="px-4 py-3">Date Joined</th>
+                <th className="px-4 py-3 text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredContacts.map((contact, i) => (
+                <tr key={contact._id || i} className="border-b border-white/[0.05] hover:bg-white/[0.04] transition-colors last:border-0">
+                  <td className="px-5 py-4 text-white/40">{i + 1}</td>
+                  <td className="px-5 py-4 font-medium">{contact.name}</td>
+                  <td className="px-5 py-4 text-cyan-300/80">{contact.email}</td>
+                  <td className="px-5 py-4 text-white/70">{contact.phone || "—"}</td>
+                  <td className="px-5 py-4 text-white/50">{new Date(contact.createdAt).toLocaleDateString()}</td>
+                  <td className="px-5 py-4 text-center">
+                    <button
+                      onClick={() => setSelectedContact(contact)}
+                      className="px-3 py-1.5 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/20 hover:border-cyan-500/40 rounded-lg transition-all text-xs font-semibold tracking-wide"
+                    >
+                      View
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {selectedContact && (
+        <ViewModal
+          item={selectedContact}
+          type="chatbotContact"
+          onClose={() => setSelectedContact(null)}
+        />
+      )}
+    </motion.div>
+  );
+};
+
 export default Admin;
 
