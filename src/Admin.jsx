@@ -54,7 +54,7 @@ const handlePdfDownload = async (e, fileUrl, fallbackName) => {
 /* ================= AUTH ================= */
 
 const Admin = () => {
-  const [password, setPassword] = useState("");
+  const [password, setPassword] = useState("admin");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [error, setError] = useState("");
   const [showPw, setShowPw] = useState(false);
